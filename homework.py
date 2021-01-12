@@ -10,39 +10,40 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-logger = logging.getLogger(__file__ + '.log')
+logger = logging.getLogger(__file__)
 logger.setLevel(logging.DEBUG)
 PRAKTIKUM_TOKEN = os.getenv('PRAKTIKUM_TOKEN')
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 URL_HW_STATUS = 'https://praktikum.yandex.ru/api/user_api/homework_statuses/'
 STATUSES = {
-    'approved': (
-        'Ревьюеру всё понравилось, можно приступать к следующему уроку.'
-    ),
-    'reviewing': 'Работа "{homework_name}" взята в ревью',
+    'approved':
+        'Ревьюеру всё понравилось, можно приступать к следующему уроку.',
+    'reviewing': 'Работа "{homework}" взята в ревью',
     'rejected': 'К сожалению в работе нашлись ошибки.'
 }
 INCORRECT_STATUS = 'Некорректный статус: {status}'
 APPROVED_HOMEWORK = 'У вас проверили работу "{homework_name}"!\n\n{verdict}'
 AUTHORIZATION = f'OAuth {PRAKTIKUM_TOKEN}'
-EXCEPTION_APPEARED = 'Обнаружена ошибка: {exception}, \
-                      параметры запроса {params}'
+EXCEPTION_APPEARED = (
+    'Обнаружена ошибка: {exception}, параметры запроса {params}'
+)
 RESPONSE_ERROR = 'Ошибка: {error}, статус ответа: {status}'
 RESPONSE_CODE = 'Ключи ответа: {info}, статус ответа: {status}'
 MESSAGE = 'Отправка сообщения в телеграм: {message}'
-BOT_EXCEPTION = 'Бот столкнулся с ошибкой: {Exception}'
-RESPONSE_SEND = 'Ошипка отправки сообщения: {error}'
+BOT_EXCEPTION = 'Бот столкнулся с ошибкой: {exception}'
+RESPONSE_SEND = 'Ошибка отправки сообщения: {error}'
 START = 'Запуск бота'
 
 
 def parse_homework_status(homework):
+    print(homework)
     name = homework['homework_name']
-    homework_status = homework['status']
-    if homework['status'] not in STATUSES:
-        raise ValueError(INCORRECT_STATUS.format(status=homework_status))
-    verdict = STATUSES[homework_status].format(homework_name=name)
-    if homework_status == 'reviewing':
+    status = homework['status']
+    if status not in STATUSES:
+        raise ValueError(INCORRECT_STATUS.format(status=status))
+    verdict = STATUSES[status].format(homework_name=name)
+    if status == 'reviewing':
         return verdict
     return APPROVED_HOMEWORK.format(
         homework_name=name,
@@ -59,7 +60,7 @@ def get_homework_statuses(current_timestamp):
             headers={'Authorization': AUTHORIZATION}
         )
 
-    except requests.exceptions.ConnectTimeout as exception:
+    except requests.exceptions.ConnectionError as exception:
         raise requests.exceptions.ConnectTimeout(
             EXCEPTION_APPEARED.format(
                 exception=exception,
